@@ -38,4 +38,9 @@ export const MyButton = styled(Link)`
         transform:scale(0.90);
         background: #012455;
     }
+
+    @media (max-width: 768px) {
+    width:6rem;
+    height:2rem;
+  }
 `
