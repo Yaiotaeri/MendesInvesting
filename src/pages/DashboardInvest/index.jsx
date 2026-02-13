@@ -38,9 +38,8 @@ export default function DashboardInvest() {
     setInvests(data || []);
   }
 
-  // ========================
+
   // FILTRO
-  // ========================
   const filteredInvests = useMemo(() => {
     return invests.filter((i) => {
       if (filterType && i.asset_type !== filterType) return false;
@@ -53,16 +52,14 @@ export default function DashboardInvest() {
     });
   }, [invests, filterType, filterBroker, filterFrom, filterTo]);
 
-  // ========================
+
   // TOTAL
-  // ========================
   const total = useMemo(() => {
     return filteredInvests.reduce((acc, i) => acc + Number(i.amount), 0);
   }, [filteredInvests]);
 
-  // ========================
+
   // AGRUPAMENTOS
-  // ========================
   const byClass = {};
   const byCurrency = {};
 
@@ -74,9 +71,8 @@ export default function DashboardInvest() {
     byCurrency[i.currency] = (byCurrency[i.currency] || 0) + amount;
   });
 
-  // ========================
+  
   // PORTFOLIO
-  // ========================
   const portfolio = {};
 
   filteredInvests.forEach((i) => {
@@ -131,7 +127,7 @@ export default function DashboardInvest() {
       <Page>
         <Title>Dashboard de Investimentos</Title>
 
-        {/* ===== FILTROS ===== */}
+        {/*  FILTROS  */}
         <div
           style={{
             display: 'grid',
@@ -192,7 +188,7 @@ export default function DashboardInvest() {
           />
         </div>
 
-        {/* ===== CARDS ===== */}
+        {/*  CARDS  */}
         <Cards>
           <Card>
             <CardTitle>Total investido</CardTitle>
@@ -200,7 +196,7 @@ export default function DashboardInvest() {
           </Card>
         </Cards>
 
-        {/* ===== GRAFICOS ===== */}
+        {/*  GRAFICOS  */}
         <Charts>
           <ChartCard>
             <h3>Distribuição por Classe</h3>
@@ -213,7 +209,7 @@ export default function DashboardInvest() {
           </ChartCard>
         </Charts>
 
-        {/* ===== CARTEIRA ===== */}
+        {/*  CARTEIRA  */}
         <div style={{ marginTop: '50px' }}>
           <h2 style={{ color: '#000' }}>Carteira Detalhada</h2>
 
