@@ -54,7 +54,8 @@ function Register() {
 
           <div>
             <label htmlFor="confirmPassword">Confirmar Senha</label>
-            <input type="password" />
+            <input type="password"
+              placeholder="Confirmar Senha"/>
           </div>
           <DntDiv>
             <p>possui conta?</p>
