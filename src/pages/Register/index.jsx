@@ -1,30 +1,35 @@
-import Menu from '../../components/MenuClean'
-import { BaseForm, DntDiv } from './styles'
-import { useNavigate } from 'react-router-dom'
-import { useState } from 'react'
-import { supabase } from '../../supabaseClient'
+import Menu from '../../components/MenuClean';
+import { BaseForm, DntDiv } from './styles';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { supabase } from '../../supabaseClient';
 
 function Register() {
-  const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   async function handleRegister(e) {
-    e.preventDefault()
+    e.preventDefault();
+
+    if (password !== confirmPassword) {
+      alert('As senhas não se conhecidem!');
+      return;
+    }
 
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-    })
+    });
 
     if (error) {
-      alert(error.message)
-      return
-    } else{
-        alert("Registrado com sucesso!")
-        navigate('/login')
+      alert(error.message);
+      return;
+    } else {
+      alert('Registrado com sucesso!');
+      navigate('/login');
     }
-
   }
   return (
     <>
@@ -54,8 +59,12 @@ function Register() {
 
           <div>
             <label htmlFor="confirmPassword">Confirmar Senha</label>
-            <input type="password"
-              placeholder="Confirmar Senha"/>
+            <input
+              type="password"
+              value={confirmPassword}
+              placeholder="Confirmar Senha"
+              onChange={(e)=> setConfirmPassword(e.target.value)}
+            />
           </div>
           <DntDiv>
             <p>possui conta?</p>
@@ -68,7 +77,7 @@ function Register() {
         </form>
       </BaseForm>
     </>
-  )
+  );
 }
 
-export default Register
+export default Register;
