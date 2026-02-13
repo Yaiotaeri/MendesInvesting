@@ -1,8 +1,8 @@
-import { useEffect, useState, useMemo } from 'react'
-import { supabase } from '../../supabaseClient'
-import Menu from '../../components/MenuClean'
-import InvestPie from '../../components/InvestPie'
-import InvestBar from '../../components/InvestBar'
+import { useEffect, useState, useMemo } from 'react';
+import { supabase } from '../../supabaseClient';
+import Menu from '../../components/MenuClean';
+import InvestPie from '../../components/InvestPie';
+import InvestBar from '../../components/InvestBar';
 import {
   Page,
   Title,
@@ -12,30 +12,30 @@ import {
   CardValue,
   Charts,
   ChartCard,
-} from './styles'
+} from './styles';
 
 export default function DashboardInvest() {
-  const [invests, setInvests] = useState([])
+  const [invests, setInvests] = useState([]);
 
-  const [filterType, setFilterType] = useState('')
-  const [filterBroker, setFilterBroker] = useState('')
-  const [filterFrom, setFilterFrom] = useState('')
-  const [filterTo, setFilterTo] = useState('')
+  const [filterType, setFilterType] = useState('');
+  const [filterBroker, setFilterBroker] = useState('');
+  const [filterFrom, setFilterFrom] = useState('');
+  const [filterTo, setFilterTo] = useState('');
 
   useEffect(() => {
-    fetchInvests()
-  }, [])
+    fetchInvests();
+  }, []);
 
   async function fetchInvests() {
-    const { data: auth } = await supabase.auth.getUser()
-    if (!auth.user) return
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) return;
 
     const { data } = await supabase
       .from('investments')
       .select('*')
-      .eq('user_id', auth.user.id)
+      .eq('user_id', auth.user.id);
 
-    setInvests(data || [])
+    setInvests(data || []);
   }
 
   // ========================
@@ -43,69 +43,86 @@ export default function DashboardInvest() {
   // ========================
   const filteredInvests = useMemo(() => {
     return invests.filter((i) => {
-      if (filterType && i.asset_type !== filterType) return false
-      if (filterBroker && i.broker !== filterBroker) return false
+      if (filterType && i.asset_type !== filterType) return false;
+      if (filterBroker && i.broker !== filterBroker) return false;
 
-      if (filterFrom && new Date(i.date) < new Date(filterFrom)) return false
-      if (filterTo && new Date(i.date) > new Date(filterTo)) return false
+      if (filterFrom && new Date(i.date) < new Date(filterFrom)) return false;
+      if (filterTo && new Date(i.date) > new Date(filterTo)) return false;
 
-      return true
-    })
-  }, [invests, filterType, filterBroker, filterFrom, filterTo])
+      return true;
+    });
+  }, [invests, filterType, filterBroker, filterFrom, filterTo]);
 
   // ========================
   // TOTAL
   // ========================
   const total = useMemo(() => {
-    return filteredInvests.reduce((acc, i) => acc + Number(i.amount), 0)
-  }, [filteredInvests])
+    return filteredInvests.reduce((acc, i) => acc + Number(i.amount), 0);
+  }, [filteredInvests]);
 
   // ========================
   // AGRUPAMENTOS
   // ========================
-  const byClass = {}
-  const byCurrency = {}
+  const byClass = {};
+  const byCurrency = {};
 
   filteredInvests.forEach((i) => {
-    const amount = Number(i.amount)
-    if (!i.asset_class || !i.currency) return
+    const amount = Number(i.amount);
+    if (!i.asset_class || !i.currency) return;
 
-    byClass[i.asset_class] = (byClass[i.asset_class] || 0) + amount
-    byCurrency[i.currency] = (byCurrency[i.currency] || 0) + amount
-  })
+    byClass[i.asset_class] = (byClass[i.asset_class] || 0) + amount;
+    byCurrency[i.currency] = (byCurrency[i.currency] || 0) + amount;
+  });
 
   // ========================
   // PORTFOLIO
   // ========================
-  const portfolio = {}
+  const portfolio = {};
 
   filteredInvests.forEach((i) => {
-    const cls = i.asset_class || 'Outros'
-    const type = i.asset_type || 'Outros'
-    const product = i.product || 'Desconhecido'
-    const currency = i.currency || 'BRL'
-    const broker = i.broker || 'N/A'
-    const amount = Number(i.amount)
+    const cls = i.asset_class || 'Outros';
+    const type = i.asset_type || 'Outros';
+    const product = i.product || 'Desconhecido';
+    const currency = i.currency || 'BRL';
+    const broker = i.broker || 'N/A';
+    const amount = Number(i.amount);
 
-    if (!portfolio[cls]) portfolio[cls] = {}
-    if (!portfolio[cls][type]) portfolio[cls][type] = {}
+    if (!portfolio[cls]) portfolio[cls] = {};
+    if (!portfolio[cls][type]) portfolio[cls][type] = {};
     if (!portfolio[cls][type][product]) {
       portfolio[cls][type][product] = {
         total: 0,
         currencies: {},
         brokers: {},
-      }
+        ids: [],
+      };
     }
 
-    const p = portfolio[cls][type][product]
-    p.total += amount
-    p.currencies[currency] = (p.currencies[currency] || 0) + amount
-    p.brokers[broker] = (p.brokers[broker] || 0) + amount
-  })
+    const p = portfolio[cls][type][product];
+    p.total += amount;
+    p.currencies[currency] = (p.currencies[currency] || 0) + amount;
+    p.brokers[broker] = (p.brokers[broker] || 0) + amount;
+    p.ids.push(i.id);
+  });
 
   // opções dos filtros
-  const types = [...new Set(invests.map((i) => i.asset_type).filter(Boolean))]
-  const brokers = [...new Set(invests.map((i) => i.broker).filter(Boolean))]
+  const types = [...new Set(invests.map((i) => i.asset_type).filter(Boolean))];
+  const brokers = [...new Set(invests.map((i) => i.broker).filter(Boolean))];
+
+  async function handleDelete(id) {
+    const confirmDelete = window.confirm(
+      'Deseja realmente excluir este investimento?',
+    );
+    if (!confirmDelete) return;
+
+    const { error } = await supabase.from('investments').delete().eq('id', id);
+    if (error) {
+      alert('Erro ao deletar' + error.message);
+      return;
+    }
+
+    setInvests((prev) => prev.filter((i) => i.id !== id));
+  }
 
   return (
     <>
@@ -126,7 +143,11 @@ export default function DashboardInvest() {
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            style={{ padding: '10px', borderRadius: '10px', border: '1px solid #ccc' }}
+            style={{
+              padding: '10px',
+              borderRadius: '10px',
+              border: '1px solid #ccc',
+            }}
           >
             <option value="">Todos os Tipos</option>
             {types.map((t) => (
@@ -137,7 +158,11 @@ export default function DashboardInvest() {
           <select
             value={filterBroker}
             onChange={(e) => setFilterBroker(e.target.value)}
-            style={{ padding: '10px', borderRadius: '10px', border: '1px solid #ccc' }}
+            style={{
+              padding: '10px',
+              borderRadius: '10px',
+              border: '1px solid #ccc',
+            }}
           >
             <option value="">Todas Corretoras</option>
             {brokers.map((b) => (
@@ -149,13 +174,21 @@ export default function DashboardInvest() {
             type="date"
             value={filterFrom}
             onChange={(e) => setFilterFrom(e.target.value)}
-            style={{ padding: '10px', borderRadius: '10px', border: '1px solid #ccc' }}
+            style={{
+              padding: '10px',
+              borderRadius: '10px',
+              border: '1px solid #ccc',
+            }}
           />
           <input
             type="date"
             value={filterTo}
             onChange={(e) => setFilterTo(e.target.value)}
-            style={{ padding: '10px', borderRadius: '10px', border: '1px solid #ccc' }}
+            style={{
+              padding: '10px',
+              borderRadius: '10px',
+              border: '1px solid #ccc',
+            }}
           />
         </div>
 
@@ -222,13 +255,30 @@ export default function DashboardInvest() {
                           gap: '10px',
                           color: '#111827',
                           marginBottom: '0.5rem',
+                          position: 'relative',
                         }}
                       >
                         <strong>{product}</strong>
                         <span style={{ fontSize: '18px', fontWeight: 700 }}>
                           R$ {data.total.toFixed(2)}
                         </span>
-
+                        {/* Botão de delete */}
+                        <button
+                          onClick={() => handleDelete(data.ids[0])} // usa o primeiro id
+                          style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '8px',
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: '#ef4444',
+                            fontSize: '18px',
+                          }}
+                          title="Excluir investimento"
+                        >
+                          🗑️
+                        </button>
                         <div
                           style={{
                             display: 'flex',
@@ -286,5 +336,5 @@ export default function DashboardInvest() {
         </div>
       </Page>
     </>
-  )
+  );
 }
